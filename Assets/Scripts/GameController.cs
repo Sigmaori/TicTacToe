@@ -15,6 +15,7 @@ public class Player
 {
     public Image panel;
     public Text text;
+    public Button button;
 }
 
 public class GameController : MonoBehaviour
@@ -23,6 +24,7 @@ public class GameController : MonoBehaviour
     public Text _gameOverText;
     public GameObject _gameOverPanel;
     public GameObject _restartButton;
+    public GameObject _startInfo;
     public Player _playerX;
     public Player _playerO;
     public PlayerColor _activePlayerColor;
@@ -47,20 +49,43 @@ public class GameController : MonoBehaviour
         }
     }
 
+    private void SetPlayerButtons(bool togglePlayerButton)
+    {
+        _playerX.button.interactable = togglePlayerButton;
+        _playerO.button.interactable = togglePlayerButton;
+    }
+
+    private void SetPlayerColorInactive()
+    {
+        _playerX.panel.color = _inactivePlayerColor.panelColor;
+        _playerX.text.color = _inactivePlayerColor.textColor;
+
+        _playerO.panel.color = _inactivePlayerColor.panelColor;
+        _playerO.text.color = _inactivePlayerColor.textColor;
+    }
+
     private void Awake()
     {
-        SetPlayerColors(_playerX, _playerO);
         SetGameControllerReferenceOnButtons();
-        _playerSide = "X";
         _gameOverPanel.SetActive(false);
         _moveCount = 0;
         _restartButton.SetActive(false);
     } 
 
+    private void StartGame()
+    {
+        SetBoardInteractable(true);
+        SetPlayerButtons(false);
+        _startInfo.SetActive(false);
+    }
+
     private void GameOver(string winningPlayer)
     {
         if (winningPlayer == "draw")
+        {
             SetGameOverText("It's a draw!");
+            SetPlayerColorInactive();
+        }
         else
             SetGameOverText(winningPlayer + " Wins!");
 
@@ -92,6 +117,18 @@ public class GameController : MonoBehaviour
 
         oldPlayer.panel.color = _inactivePlayerColor.panelColor;
         oldPlayer.text.color = _inactivePlayerColor.textColor;
+    }
+
+    public void SetStartingSide(string startingSide)
+    {
+        _playerSide = startingSide;
+
+        if (_playerSide == "X")
+            SetPlayerColors(_playerX, _playerO);
+        else
+            SetPlayerColors(_playerO, _playerX);
+
+        StartGame();
     }
 
     public string GetPlayerSide()
@@ -147,12 +184,12 @@ public class GameController : MonoBehaviour
 
     public void RestartGame()
     {
-        _playerSide = "X";
         _moveCount = 0;
         _gameOverPanel.SetActive(false);
         _restartButton.SetActive(false);
-        SetBoardInteractable(true);
-        SetPlayerColors(_playerX, _playerO);
+        SetPlayerButtons(true);
+        SetPlayerColorInactive();
+        _startInfo.SetActive(true);
 
         for (int i = 0; i < _buttonList.Length; i++)
         {
