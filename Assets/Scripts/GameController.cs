@@ -1,5 +1,6 @@
 ﻿using JetBrains.Annotations;
 using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -32,6 +33,7 @@ public class GameController : MonoBehaviour
 
     private string _playerSide;
     private int _moveCount;
+    private bool _isWinner = false;
 
     private void SetGameControllerReferenceOnButtons()
     {
@@ -136,49 +138,50 @@ public class GameController : MonoBehaviour
         return _playerSide;
     }
 
+    private bool IsWinner()
+    {
+        var winConditions = new[]
+        {
+            //Vertical
+            new [] { 0, 1, 2 },
+            new [] { 3, 4, 5 },
+            new [] { 6, 7, 8 },
+
+            //Horizontal
+            new [] { 0, 3, 6 },
+            new [] { 1, 4, 7 },
+            new [] { 2, 5, 8 },
+
+            //Diagonal
+            new [] { 0, 4, 8 },
+            new [] { 2, 4, 6 }
+        };
+
+        foreach (var winCondition in winConditions)
+        {
+            _isWinner = winCondition.All(c => _buttonList[c].text == _playerSide);
+
+            if (_isWinner)
+                break;
+        }
+
+        return _isWinner;
+    }
+
     public void EndTurn()
     {
         _moveCount++;
 
-        if (_buttonList[0].text == _playerSide && _buttonList[1].text == _playerSide && _buttonList[2].text == _playerSide)
-        {
+        IsWinner();
+
+        if (_isWinner)
             GameOver(_playerSide);
-        }
-        else if (_buttonList[3].text == _playerSide && _buttonList[4].text == _playerSide && _buttonList[5].text == _playerSide)
-        {
-            GameOver(_playerSide);
-        }
-        else if (_buttonList[6].text == _playerSide && _buttonList[7].text == _playerSide && _buttonList[8].text == _playerSide)
-        {
-            GameOver(_playerSide);
-        }
-        else if (_buttonList[0].text == _playerSide && _buttonList[3].text == _playerSide && _buttonList[6].text == _playerSide)
-        {
-            GameOver(_playerSide);
-        }
-        else if (_buttonList[1].text == _playerSide && _buttonList[4].text == _playerSide && _buttonList[7].text == _playerSide)
-        {
-            GameOver(_playerSide);
-        }
-        else if (_buttonList[2].text == _playerSide && _buttonList[5].text == _playerSide && _buttonList[8].text == _playerSide)
-        {
-            GameOver(_playerSide);
-        }
-        else if (_buttonList[0].text == _playerSide && _buttonList[4].text == _playerSide && _buttonList[8].text == _playerSide)
-        {
-            GameOver(_playerSide);
-        }
-        else if (_buttonList[2].text == _playerSide && _buttonList[4].text == _playerSide && _buttonList[6].text == _playerSide)
-        {
-            GameOver(_playerSide);
-        }
-        else if (_moveCount >= 9)
-        {
-            GameOver("draw");
-        }
         else
         {
-            ChangeSides();
+            if (_moveCount >= 9)
+                GameOver("draw");
+            else
+                ChangeSides();
         }
     }
 
