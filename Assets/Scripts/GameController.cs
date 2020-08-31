@@ -34,6 +34,8 @@ public class GameController : MonoBehaviour
     private string _playerSide;
     private int _moveCount;
     private bool _isWinner = false;
+    private bool _toggleOnAIOpponent = true;
+    private bool _hasAIMoved = false;
 
     private void SetGameControllerReferenceOnButtons()
     {
@@ -123,6 +125,7 @@ public class GameController : MonoBehaviour
 
     public void SetStartingSide(string startingSide)
     {
+        //Set AI player here after player selects side?
         _playerSide = startingSide;
 
         if (_playerSide == "X")
@@ -168,6 +171,51 @@ public class GameController : MonoBehaviour
         return _isWinner;
     }
 
+    private void AITurn()
+    {
+        var winConditions = new[]
+        {
+            //Vertical
+            new [] { 0, 1, 2 },
+            new [] { 3, 4, 5 },
+            new [] { 6, 7, 8 },
+
+            //Horizontal
+            new [] { 0, 3, 6 },
+            new [] { 1, 4, 7 },
+            new [] { 2, 5, 8 },
+
+            //Diagonal
+            new [] { 0, 4, 8 },
+            new [] { 2, 4, 6 }
+        };
+
+        var buttonToSet = 0;
+
+        //Easy -- Pick any empty space --
+        foreach (var winCondition in winConditions)
+        {
+            foreach (var win in winCondition)
+            {
+                if (string.IsNullOrEmpty(_buttonList[win].text))
+                {
+                    buttonToSet = win;
+                    break;
+                }
+            }
+        }
+
+        //Hard -- Determine unused win condition available --
+
+        //Very Hard -- Learn player movements and block player --
+
+        _buttonList[buttonToSet].text = _playerSide;
+        _buttonList[buttonToSet].GetComponentInParent<Button>().interactable = false;
+
+        _hasAIMoved = true;
+        EndTurn();
+    }
+
     public void EndTurn()
     {
         _moveCount++;
@@ -181,7 +229,14 @@ public class GameController : MonoBehaviour
             if (_moveCount >= 9)
                 GameOver("draw");
             else
+            {
                 ChangeSides();
+
+                if (!_hasAIMoved && _toggleOnAIOpponent)
+                    AITurn();
+                else
+                    _hasAIMoved = false;
+            }
         }
     }
 
@@ -193,6 +248,7 @@ public class GameController : MonoBehaviour
         SetPlayerButtons(true);
         SetPlayerColorInactive();
         _startInfo.SetActive(true);
+        _hasAIMoved = false;
 
         for (int i = 0; i < _buttonList.Length; i++)
         {
